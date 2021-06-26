@@ -1,10 +1,10 @@
 const { Schema, model } = require("mongoose");
 
-const userSchema = new Schema(
+const contactSchema = new Schema(
   {
     name: {
       type: String,
-      required: [true, "Enter name"],
+      required: [true, "Set name for contact"],
     },
     email: {
       type: String,
@@ -20,9 +20,16 @@ const userSchema = new Schema(
   {
     versionKey: false,
     timestamps: true,
+    toJSON: {
+      virtuals: true,
+      transform: function (doc, ret) {
+        delete ret._id;
+        return ret;
+      },
+    },
   }
 );
 
-const User = model("User", userSchema);
+const Contact = model("contact", contactSchema);
 
-module.exports = User;
+module.exports = Contact;

@@ -1,27 +1,31 @@
-const User = require("./user");
+const Contact = require("../model/contact");
 
 const listContacts = async () => {
-  const result = await User.find();
-  return result;
+  const results = await Contact.find();
+  return results;
 };
 
 const getContactById = async (contactId) => {
-  const result = await User.findById(contactId);
+  const result = await Contact.findById(contactId);
   return result;
 };
 
 const removeContact = async (contactId) => {
-  const result = await User.findOneAndRemove(contactId);
+  const result = await Contact.findOneAndDelete(contactId);
   return result;
 };
 
 const addContact = async (body) => {
-  const result = await User.create(body);
+  const result = await Contact.create(body);
   return result;
 };
 
 const updateContact = async (contactId, body) => {
-  const result = User.findOneAndUpdate(contactId, { ...body }, { new: true });
+  const result = await Contact.findOneAndUpdate(
+    contactId,
+    { ...body },
+    { new: true }
+  );
   return result;
 };
 
