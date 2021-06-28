@@ -1,17 +1,17 @@
 const Joi = require("joi");
+const mongoose = require("mongoose");
 
-const AddContactValidation = Joi.object({
+const schemaCreateContact = Joi.object({
   name: Joi.string().alphanum().min(3).max(30).required(),
-  email: Joi.string()
-    .email({
-      minDomainSegments: 2,
-      tlds: { allow: ["com", "net"] },
-    })
-    .required(),
-  phone: Joi.number().integer().precision(13).required(),
+  email: Joi.string().email({
+    minDomainSegments: 2,
+    tlds: { allow: ["com", "net"] },
+  }),
+  phone: Joi.string().min(9).max(15).required(),
+  favorite: Joi.boolean().optional(),
 });
 
-const UpdateContactValidation = Joi.object({
+const schemaUpdateContact = Joi.object({
   name: Joi.string().alphanum().min(3).max(30).optional(),
   email: Joi.string()
     .email({
@@ -19,23 +19,39 @@ const UpdateContactValidation = Joi.object({
       tlds: { allow: ["com", "net"] },
     })
     .optional(),
-  phone: Joi.number().integer().precision(13).optional(),
-}).or("name", "email", "phone");
+  phone: Joi.string().min(9).max(15),
+  favorite: Joi.boolean().optional(),
+}).or("name", "email", "phone", "favourite");
+
+const schemaUpdateFavorite = Joi.object({
+  favorite: Joi.boolean().required(),
+});
 
 const validate = async (schema, obj, next) => {
   try {
     await schema.validateAsync(obj);
     next();
   } catch (err) {
-    next({ status: 400, message: err.message });
+    next({
+      status: 400,
+      message: err.message.replace(/"/g, ""),
+    });
   }
 };
-
 module.exports = {
-  ValidateCreateContact: (req, _res, next) => {
-    return validate(AddContactValidation, req.body, next);
+  validationCreateContact: (req, res, next) => {
+    return validate(schemaCreateContact, req.body, next);
   },
-  ValidateChangeContact: (req, _res, next) => {
-    return validate(UpdateContactValidation, req.body, next);
+  validationUpdateContact: (req, res, next) => {
+    return validate(schemaUpdateContact, req.body, next);
+  },
+  validationUpdateStatus: (req, res, next) => {
+    return validate(schemaUpdateFavorite, req.body, next);
+  },
+  validateMongoId: (req, res, next) => {
+    if (!mongoose.Types.ObjectId.isValid(req.params.contactId)) {
+      return next({ status: 400, message: "Invalid ObjectId" });
+    }
+    next();
   },
 };
